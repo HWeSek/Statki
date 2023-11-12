@@ -1,19 +1,19 @@
 const Field_size = 10;
-const computer_ships_display = true;
+let computer_ships_display = false;
 /////////////////////////////////////GRACZ///////////////////////////////////////////////////////
-const _1x4 = {
+let _1x4 = {
     ilosc: 1,
     dlugosc: 4
 }
-const _2x3 = {
+let _2x3 = {
     ilosc: 2,
     dlugosc: 3
 }
-const _3x2 = {
+let _3x2 = {
     ilosc: 3,
     dlugosc: 2
 }
-const _4x1 = {
+let _4x1 = {
     ilosc: 4,
     dlugosc: 1
 }
@@ -187,22 +187,44 @@ let game = {
 
             document.getElementById('game_start').style.display = 'block'
         };
+    },
+    player_reset_variables: function () {
+        _1x4 = {
+            ilosc: 1,
+            dlugosc: 4
+        }
+        _2x3 = {
+            ilosc: 2,
+            dlugosc: 3
+        }
+        _3x2 = {
+            ilosc: 3,
+            dlugosc: 2
+        }
+        _4x1 = {
+            ilosc: 4,
+            dlugosc: 1
+        }
+        this.selected_ship = 4
+        this.pozycja_pionowa = true
+        this.warship_list = [_1x4, _2x3, _3x2, _4x1]
+        this.plansza = []
     }
 }
 ///////////////////////////////////////KOMPUTER/////////////////////////////////////////////////////////////
-const cmp_1x4 = {
+let cmp_1x4 = {
     ilosc: 1,
     dlugosc: 4
 }
-const cmp_2x3 = {
+let cmp_2x3 = {
     ilosc: 2,
     dlugosc: 3
 }
-const cmp_3x2 = {
+let cmp_3x2 = {
     ilosc: 3,
     dlugosc: 2
 }
-const cmp_4x1 = {
+let cmp_4x1 = {
     ilosc: 4,
     dlugosc: 1
 }
@@ -217,6 +239,12 @@ let game_cmp = {
                 field.classList.add('field')
                 field.setAttribute('id', `${i * 10 + j}_cmp`)
                 document.getElementById('plansza-cmp').append(field);
+            }
+        }
+        for (let i = 0; i < Field_size + 2; i++) {
+            this.plansza.push([]);
+            for (let j = 0; j < Field_size + 2; j++) {
+                this.plansza[i].push(0);
             }
         }
     },
@@ -255,6 +283,7 @@ let game_cmp = {
                         pozycja_ustalona = true;
                         if (j == 0) {
                             pozycje[0] = this.randomPositon(1, Field_size + 1 - warship_type.dlugosc);
+                            console.log(this.plansza);
                             if (this.plansza[pozycje[0][0]][pozycje[0][1]] != 0) pozycja_ustalona = false;
                         }
                         else {
@@ -271,12 +300,41 @@ let game_cmp = {
                     if (pozycja_ustalona) {
                         for (pozycja of pozycje) {
                             this.plansza[pozycja[1]][pozycja[0]] = 1;
-                            if (computer_ships_display) document.getElementById((pozycja[0] - 1) + ((pozycja[1] - 1) * 10) + "_cmp").style.backgroundColor = 'pink';
+                            this.drawShips();
                         }
                     };
                 }
             }
         }
+    },
+    drawShips: function () {
+        for (let i = 0; i < Field_size; i++) {
+            for (let j = 0; j < Field_size; j++) {
+                if (game_cmp.plansza[i + 1][j + 1] == 1)
+                    if (computer_ships_display) document.getElementById(j + (i * 10) + "_cmp").style.backgroundColor = 'pink';
+            }
+        }
+    }
+    ,
+    cpm_reset_variables: function () {
+        cmp_1x4 = {
+            ilosc: 1,
+            dlugosc: 4
+        }
+        cmp_2x3 = {
+            ilosc: 2,
+            dlugosc: 3
+        }
+        cmp_3x2 = {
+            ilosc: 3,
+            dlugosc: 2
+        }
+        cmp_4x1 = {
+            ilosc: 4,
+            dlugosc: 1
+        }
+        this.warship_list = [cmp_1x4, cmp_2x3, cmp_3x2, cmp_4x1]
+        this.plansza = []
     }
 }
 
@@ -287,6 +345,7 @@ let game_loop = {
     player_ships_remaining: 20,
     cpm_ships_remaining: 20,
     hit_positions: [],
+    cmp_hit_postions: [],
     loop: function () {
         document.getElementById('game_start').style.display = 'none';
         //Dodawanie listenerów do wszystkich pól
@@ -297,19 +356,28 @@ let game_loop = {
         }
         //Usuwanie listenerów klikniętym polom
         for (position of game_loop.hit_positions) {
-            document.getElementById((position[0] - 1) + ((position[1] - 1) * 10)).removeEventListener('click', game_loop.player_turn)
+            document.getElementById((position[0] - 1) + ((position[1] - 1) * 10) + "_cmp").removeEventListener('click', game_loop.player_turn)
         }
         //Sprawdzenie warunku wygranej 
         //Warunek wygranej cpm: player_ships_remaining = 0;
         //Warunek wygranej player: cmp_ships_remaining = 0;
         //potem -> Wyłącz wszystkie event listenery -> Wyświetl ekran wygranej
         if (this.player_ships_remaining == 0 || this.cpm_ships_remaining == 0) {
-            console.log('wygrana');
             for (let i = 0; i < Field_size; i++) {
                 for (let j = 0; j < Field_size; j++) {
-                    document.getElementById(i * 10 + j + "_cmp").addEventListener('click', game_loop.player_turn)
+                    document.getElementById(i * 10 + j + "_cmp").removeEventListener('click', game_loop.player_turn)
                 }
             }
+            computer_ships_display = true;
+            game_cmp.drawShips();
+            document.getElementById('game_end').style.display = 'block';
+            document.getElementById('game_reset').addEventListener('click', reset_game)
+        }
+        if (this.player_ships_remaining == 0) {
+            document.getElementById('game_end').children[1].src = './imgs/lost.gif';
+
+        } else if (this.cpm_ships_remaining == 0) {
+            document.getElementById('game_end').children[1].src = './imgs/win.gif';
         }
     },
     player_turn: function () {
@@ -321,6 +389,7 @@ let game_loop = {
         let plansza_cmp = game_cmp.plansza;
         let img = document.createElement('img');
         img.setAttribute('width', '49')
+        img.setAttribute('draggable', false);
         for (let i = 0; i < Field_size; i++) {
             for (let j = 0; j < Field_size; j++) {
                 document.getElementById(i * 10 + j + "_cmp").removeEventListener('click', game_loop.player_turn)
@@ -344,7 +413,16 @@ let game_loop = {
     cmp_turn: function () {
         //Wybranie pola i sprawdzenie trafienia przez bota;
         let plansza = game.plansza;
-        let pozycja = this.randomPositon(1, Field_size)
+        let pozycja_ustalona = false;
+        let pozycja = [];
+        while (pozycja_ustalona == false) {
+            pozycja = this.randomPositon(1, Field_size)
+            pozycja_ustalona = true;
+            for (pos of this.cmp_hit_postions) {
+                if (pos.toString() === pozycja.toString()) { pozycja_ustalona = false }
+            }
+        }
+        this.cmp_hit_postions.push(pozycja)
         let img = document.createElement('img');
         img.setAttribute('width', '49')
         setTimeout(() => {
@@ -359,18 +437,35 @@ let game_loop = {
             }
             document.getElementById((pozycja[0] - 1) + ((pozycja[1] - 1) * 10)).append(img);
         }, 1000)
+    },
+    loop_reset_variables: function () {
+        this.player_ships_remaining = 20
+        this.cpm_ships_remaining = 20
+        this.hit_positions = []
+        this.cmp_hit_postions = []
     }
 
 }
 
+function reset_game() {
+    computer_ships_display = false;
+    document.getElementById('game_reset').removeEventListener('click', reset_game)
+    document.getElementById('game_end').style.display = 'none';
+    document.getElementById('plansza').innerHTML = '';
+    document.getElementById('plansza-cmp').innerHTML = '';
+    game_cmp.cpm_reset_variables()
+    game.player_reset_variables()
+    game_loop.loop_reset_variables()
+
+    game_cmp.drawTable();
+    game_cmp.placeShips();
+    game.init();
+    game.preGameLoop();
+    document.getElementById('game_start').addEventListener('click', game_loop.loop)
+    document.getElementById('4x1').style.backgroundColor = 'blue';
+}
 
 document.addEventListener("DOMContentLoaded", (e) => {
-    for (let i = 0; i < Field_size + 2; i++) {
-        game_cmp.plansza.push([]);
-        for (let j = 0; j < Field_size + 2; j++) {
-            game_cmp.plansza[i].push(0);
-        }
-    }
     game_cmp.drawTable();
     game_cmp.placeShips();
     game.init();

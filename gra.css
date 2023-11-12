@@ -6,7 +6,9 @@
  .main {
      display: flex;
      flex-direction: row;
+     flex-wrap: wrap;
  }
+
  #plansza, #plansza-cmp {
      display: flex;
      flex-flow: wrap;
@@ -23,6 +25,7 @@
  #menu {
      display: flex; flex-direction: column;
      width: 230px;
+     height: 100%;
  }
  .menu-ship{
      display: flex;
@@ -44,7 +47,41 @@
      text-align: center;
      font-size: 2em;
      padding-top: 13px;
+     transition: 0.3s;
  }
  #game_start:hover{
-     background-color: brown;
+     background-color: rgb(194, 5, 5);
+ }
+
+ #game_end {
+    position: absolute;
+    top: 600px;
+    left: calc(50vw - 320px);
+    border: black 1px solid;
+    width: 500px;
+    height: 200px;
+    border-radius: 30px;
+    padding: 0;
+    background-image: url('./imgs/bg-es.png');
+    display: none;
+ }
+
+
+ #game_reset {
+    width: 200px;
+    height: 50px;
+    background-color: bisque;
+    border: 2px rgb(39, 39, 39) solid;
+    border-radius: 30px;
+    position: absolute;
+    bottom: 10px;
+    margin-left: 150px;
+    text-align: center;
+    font-size: 1.3em;
+    padding-top: 13px;
+    transition: 0.3s;
+ }
+
+ #game_reset:hover {
+    background-color:crimson;
  }
